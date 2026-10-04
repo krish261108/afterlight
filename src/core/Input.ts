@@ -81,6 +81,11 @@ export class Input {
   private lookLast = { x: 0, y: 0 };
   private touchMove = { x: 0, y: 0 };
   private canvas: HTMLElement;
+  private lockFromGesture = false;
+  private dragDown = false;
+  private dragging = false;
+  private dragStart = { x: 0, y: 0 };
+  private dragLast = { x: 0, y: 0 };
 
   constructor(canvas: HTMLElement) {
     this.canvas = canvas;
@@ -95,6 +100,16 @@ export class Input {
         this.lookDelta.x += e.movementX;
         this.lookDelta.y += e.movementY;
         this.lastDevice = 'keyboard';
+      } else if (this.dragDown && this.gameplayActive) {
+        // Fallback when pointer lock is unavailable: drag to look, click to attack.
+        const dx = e.clientX - this.dragLast.x;
+        const dy = e.clientY - this.dragLast.y;
+        this.dragLast = { x: e.clientX, y: e.clientY };
+        if (Math.hypot(e.clientX - this.dragStart.x, e.clientY - this.dragStart.y) > 6) this.dragging = true;
+        if (this.dragging) {
+          this.lookDelta.x += dx * 1.4;
+          this.lookDelta.y += dy * 1.4;
+        }
       }
     });
     document.addEventListener('pointerlockchange', () => {
@@ -106,20 +121,23 @@ export class Input {
       }
     });
     document.addEventListener('pointerlockerror', () => {
-      this.lockSupported = false;
+      if (this.lockFromGesture) this.lockSupported = false;
     });
     this.lockSupported = 'requestPointerLock' in canvas;
   }
 
-  requestLock() {
+  requestLock(fromGesture = false) {
     if (!this.lockSupported || this.pointerLocked || this.lastDevice === 'touch') return;
+    this.lockFromGesture = fromGesture;
     try {
       const r = (this.canvas as HTMLElement & { requestPointerLock: () => unknown }).requestPointerLock();
       if (r && typeof (r as Promise<void>).catch === 'function') {
-        (r as Promise<void>).catch(() => (this.lockSupported = false));
+        (r as Promise<void>).catch(() => {
+          if (fromGesture) this.lockSupported = false;
+        });
       }
     } catch {
-      this.lockSupported = false;
+      if (fromGesture) this.lockSupported = false;
     }
   }
 
@@ -170,8 +188,27 @@ export class Input {
     if (isDown && e.target !== this.canvas) return;
     this.lastDevice = 'keyboard';
     if (isDown && this.gameplayActive && this.lockSupported && !this.pointerLocked) {
-      this.requestLock();
+      this.requestLock(true);
       return;
+    }
+    if (!this.pointerLocked && this.gameplayActive && e.button === 0) {
+      if (isDown) {
+        this.dragDown = true;
+        this.dragging = false;
+        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.dragLast = { x: e.clientX, y: e.clientY };
+        this.setAction('confirm', 'm0c', true);
+        return;
+      }
+      if (this.dragDown) {
+        this.dragDown = false;
+        this.setAction('confirm', 'm0c', false);
+        if (!this.dragging) {
+          this.pressedSet.add('light');
+        }
+        this.dragging = false;
+        return;
+      }
     }
     if (e.button === 0) this.setAction('light', 'm0', isDown);
     if (e.button === 2) this.setAction('block', 'm2', isDown);

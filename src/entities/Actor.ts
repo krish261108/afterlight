@@ -74,6 +74,8 @@ export class Actor {
   deathPose: 'dead' | 'deadFront' = 'dead';
   /** When true the actor keeps its body after death (story characters). */
   keepBody = false;
+  /** Whether the level's arena boundary applies to this actor. */
+  bounded = true;
   private projectileFired = false;
   private soundPlayed = false;
   onDeath: (() => void) | null = null;
@@ -429,7 +431,7 @@ export class Actor {
     const w = this.ctx.world;
     this.pos.x += this.vel.x * dt;
     this.pos.z += this.vel.z * dt;
-    w.resolve(this.pos, this.radius);
+    w.resolve(this.pos, this.radius, this.bounded);
     const g = w.groundAt(this.pos.x, this.pos.z, this.pos.y);
     if (this.grounded && this.pos.y - g < 0.6 && this.pos.y >= g - 0.6) {
       this.pos.y = g;

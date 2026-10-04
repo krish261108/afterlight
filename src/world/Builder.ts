@@ -160,10 +160,11 @@ export class Builder {
       new THREE.MeshStandardMaterial({
         color,
         map: tex,
-        roughness: 0.25,
-        metalness: 0.25,
+        roughness: 0.3,
+        metalness: 0,
         transparent: true,
-        opacity: 0.88,
+        opacity: 0.82,
+        emissive: new THREE.Color(color).multiplyScalar(0.18),
       }),
     );
     m.rotation.x = -Math.PI / 2;

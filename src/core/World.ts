@@ -68,7 +68,7 @@ export class World {
   }
 
   /** Pushes a circle out of walls. Mutates pos. */
-  resolve(pos: THREE.Vector3, radius: number) {
+  resolve(pos: THREE.Vector3, radius: number, bounded = true) {
     for (const w of this.walls) {
       if (pos.y + 1.6 < w.yMin || pos.y > w.yMax - 0.05) continue;
       const { lx, lz } = this.local(w, pos.x, pos.z);
@@ -104,6 +104,7 @@ export class World {
       pos.x += wx * push;
       pos.z += wz * push;
     }
+    if (!bounded) return;
     const dx = pos.x - this.boundsCenter.x;
     const dz = pos.z - this.boundsCenter.y;
     const d = Math.hypot(dx, dz);
