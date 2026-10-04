@@ -249,7 +249,7 @@ export class Game {
     this.save.chapter = chapter;
     this.save.checkpoint = cp;
     writeSave(this.save);
-    this.ui.toast('Checkpoint reached.');
+    if (this.level && this.level.time > 3) this.ui.toast('Checkpoint reached.');
   }
 
   async onPlayerDeath() {
@@ -319,6 +319,23 @@ export class Game {
       return;
     }
     p.applyPerks(perksFrom(this.save.memories));
+  }
+
+  /** Opens the memory book over the game and resolves when it is closed. */
+  showBookOverlay(): Promise<void> {
+    return new Promise((resolve) => {
+      if (!this.level) return resolve();
+      this.state = 'paused';
+      this.input.exitLock();
+      this.input.setTouchVisible(false);
+      this.ui.showBook(this.save.memories, this.save.life, () => {
+        this.ui.clearScreens();
+        this.state = 'playing';
+        this.input.releaseAll();
+        this.updateTouchVisibility();
+        resolve();
+      });
+    });
   }
 
   collectShard(id: string) {

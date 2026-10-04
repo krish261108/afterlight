@@ -646,6 +646,8 @@ export class UI {
   }
 
   toast(text: string, cls = '') {
+    for (const c of Array.from(this.toastEl.children)) if (c.textContent === text) return;
+    while (this.toastEl.childElementCount >= 3) this.toastEl.firstElementChild?.remove();
     const t = el('div', 't ' + cls, escapeHtml(text));
     this.toastEl.appendChild(t);
     setTimeout(() => {

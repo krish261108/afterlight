@@ -680,6 +680,13 @@ export abstract class Level implements CombatCtx {
     this.game.ui.toast(text.replace(/\{(\w+)\}/g, (_m, k: string) => this.game.keyLabel(k)), 'gold');
   }
 
+  async openBook() {
+    const id = this.runId;
+    if (this.game.debug && this.game.autopilot) return;
+    await this.game.showBookOverlay();
+    this.check(id);
+  }
+
   bossBar(f: Fighter | null) {
     this.boss = f;
   }
@@ -730,6 +737,7 @@ export abstract class Level implements CombatCtx {
     for (const a of this.actors) {
       if (a.team === 'enemy' && a.alive && a !== p && this.time - a.lastDamagedAt > 0.3) {
         a.lastDamagedAt = this.time;
+        a.minHp = 0;
         a.hp = 0;
         a.die(p);
       }

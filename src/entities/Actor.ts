@@ -76,6 +76,8 @@ export class Actor {
   keepBody = false;
   /** Whether the level's arena boundary applies to this actor. */
   bounded = true;
+  /** Scripted fights: damage can't push the actor below this. */
+  minHp = 0;
   private projectileFired = false;
   private soundPlayed = false;
   onDeath: (() => void) | null = null;
@@ -279,7 +281,7 @@ export class Actor {
       this.posture += atk.posture * 0.85;
       this.postureDelay = 1.2;
       const chip = atk.damage * 0.12 * att.damageDealtMul;
-      this.hp -= chip * this.damageTakenMul * (this.invulnerable ? 0 : 1);
+      this.hp = Math.max(this.minHp, this.hp - chip * this.damageTakenMul * (this.invulnerable ? 0 : 1));
       this.pushBack(att, 0.25);
       ctx.shake(0.06);
       if (this.posture >= this.maxPosture) {
@@ -291,7 +293,7 @@ export class Actor {
       return 'blocked';
     }
     const dmg = atk.damage * att.damageDealtMul * this.damageTakenMul * (this.state === 'stagger' ? 1.35 : 1);
-    if (!this.invulnerable) this.hp -= dmg;
+    if (!this.invulnerable) this.hp = Math.max(this.minHp, this.hp - dmg);
     this.lastDamagedAt = ctx.time;
     this.lastHitBy = att;
     this.posture += atk.posture * (this.state === 'stagger' ? 0 : 1);
@@ -301,7 +303,7 @@ export class Actor {
     ctx.particles.burst(hitPos, atk.heavy ? 18 : 10, atk.sound === 'stillfire' ? '#ffffff' : '#ffcf8a', 5, 0.35, 0.1);
     ctx.hitstop(atk.heavy ? 0.085 : 0.05);
     ctx.shake(atk.heavy ? 0.22 : 0.1);
-    if (this.hp <= 0) {
+    if (this.hp <= 0 && this.minHp <= 0) {
       this.hp = 0;
       this.die(att);
       ctx.onHit(this, att, 'killed', dmg);

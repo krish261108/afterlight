@@ -196,7 +196,7 @@ export class Fighter extends Actor {
     }
     const dist = this.distTo(t);
     if (this.guardRadius > 0) {
-      if (dist > this.guardRadius) {
+      if (Math.hypot(dist, (t.pos.y - this.pos.y) * 1.6) > this.guardRadius) {
         this.vel.multiplyScalar(0.8);
         this.faceToward(t.pos.x, t.pos.z, dt, 3);
         return;
