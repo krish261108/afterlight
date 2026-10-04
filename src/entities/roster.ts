@@ -263,6 +263,7 @@ export function corrowSpar(): FighterType {
     dodgeChance: 0,
     parryChance: 0.08,
     boss: true,
+    aggroRange: 90,
     needsToken: false,
     attacks: [
       { def: { ...E.swordSlash, damage: 6 }, weight: 3, maxRange: 2.5, chain: [{ ...E.swordBack, damage: 6 }] },
@@ -287,6 +288,7 @@ export function sauvirBoss(): FighterType {
     dodgeChance: 0.16,
     parryChance: 0.14,
     boss: true,
+    aggroRange: 90,
     needsToken: false,
     staggerDur: 1.5,
     postureRegen: 18,
@@ -322,6 +324,7 @@ export function deserterCaptain(): FighterType {
     dodgeChance: 0.05,
     parryChance: 0.12,
     boss: true,
+    aggroRange: 90,
     needsToken: false,
     attacks: [
       { def: { ...E.swordSlash, damage: 14 }, weight: 3, maxRange: 2.6, chain: [{ ...E.swordBack, damage: 14 }, { ...E.swordOver, damage: 20 }] },
@@ -346,6 +349,7 @@ export function forgeMaster(): FighterType {
     dodgeChance: 0,
     parryChance: 0.08,
     boss: true,
+    aggroRange: 90,
     needsToken: false,
     superArmor: true,
     staggerDur: 2.0,

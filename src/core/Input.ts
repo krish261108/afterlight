@@ -219,6 +219,12 @@ export class Input {
     if (e.button === 0) this.setAction('confirm', 'm0c', isDown);
   }
 
+  /** Drops this frame's presses so a key that opened a menu doesn't also act inside it. */
+  flush() {
+    this.pressedSet.clear();
+    this.releasedSet.clear();
+  }
+
   releaseAll() {
     for (const a of Array.from(this.down)) this.releasedSet.add(a);
     this.down.clear();

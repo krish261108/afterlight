@@ -1,12 +1,13 @@
 {
   "name": "afterlight",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
@@ -15,5 +16,6 @@
   },
   "dependencies": {
     "three": "^0.186.1"
-  }
+  },
+  "description": "AFTERLIGHT: Act I. A stylised 3D action game where every death costs a memory. Runs in the browser on PC, Mac, gamepad and phone."
 }

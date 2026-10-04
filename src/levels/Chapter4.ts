@@ -28,16 +28,16 @@ const SNOW: LightingPreset = {
 };
 
 const FORGE: LightingPreset = {
-  sky: ['#05050a', '#14121c', '#1c1a24'],
-  fog: '#121018',
-  fogDensity: 0.026,
+  sky: ['#0a0a12', '#1c1a28', '#262434'],
+  fog: '#2a2738',
+  fogDensity: 0.014,
   sun: '#c8ccdf',
   sunIntensity: 0.5,
   sunDir: [0.2, 0.9, 0.2],
-  ambient: '#8088aa',
-  ambientIntensity: 0.75,
-  hemiGround: '#0a0a10',
-  exposure: 1.2,
+  ambient: '#a0a8cc',
+  ambientIntensity: 1.25,
+  hemiGround: '#24222e',
+  exposure: 1.3,
   bloom: 1.0,
   suns: 1,
 };
@@ -79,6 +79,7 @@ export class Chapter4 extends Level {
   private mira: Fighter | null = null;
   private plates: THREE.Mesh[] = [];
   private hallVentsOn = false;
+  private droppedBlade: THREE.Object3D[] = [];
 
   constructor(game: Game) {
     super(game);
@@ -92,6 +93,7 @@ export class Chapter4 extends Level {
       cz: 10,
       height: (x, z) => {
         // A pass climbing north to a plateau, mountains rising on both sides.
+        if (z > 30 && z < 112 && Math.abs(x) < 26) return 10.7;
         const road = Math.abs(x - Math.sin(z * 0.04) * 6);
         let base = z < 30 ? Math.max(0, (z + 90) * 0.09) : 10.8;
         if (z > 30) base = 10.8;
@@ -131,13 +133,13 @@ export class Chapter4 extends Level {
       const f = new THREE.Mesh(new THREE.ConeGeometry(1.0, 3, 8), additive(PALETTE.stillfire, 0.85));
       f.position.set(s * 9, Y + 3.8, 35);
       this.group.add(f);
-      const l = new THREE.PointLight('#e8eeff', 10, 18, 2);
+      const l = new THREE.PointLight('#e8eeff', 140, 22, 2);
       l.position.set(s * 9, Y + 4, 35);
       this.group.add(l);
       b.updaters.push((_dt, t) => f.scale.set(1, 0.85 + Math.sin(t * 9 + s) * 0.15, 1));
     }
     // Great hall interior.
-    b.box(52, 0.3, 70, mat('#1c1a20'), 0, Y - 0.3, 75);
+    b.box(52, 0.3, 70, mat('#1c1a20'), 0, Y - 0.3, 75, 0, { floor: true });
     b.box(52, 1.4, 70, black, 0, Y + 18, 75);
     for (let i = 0; i < 6; i++) {
       for (const s of [-1, 1]) b.cyl(1.1, 1.3, 18, black2, s * 13, Y, 50 + i * 9, 8, true);
@@ -146,16 +148,18 @@ export class Chapter4 extends Level {
       b.box(1.5, 18, 70, black, s * 25.5, Y, 75, 0, { collide: true });
     }
     b.box(52, 18, 1.5, black, 0, Y, 111, 0, { collide: true });
-    // A trench of white fire down the middle of the hall.
+    // A channel of white fire down the middle of the hall, under iron grates.
     const trench = new THREE.Mesh(new THREE.BoxGeometry(3, 0.05, 30), glow(PALETTE.stillfire, 1.8));
-    trench.position.set(0, Y + 0.02, 72);
+    trench.position.set(0, Y + 0.01, 72);
     this.group.add(trench);
-    this.world.addWall(0, 72, 3, 30, Y - 1, Y + 1.4);
-    for (let i = 0; i < 10; i++) {
-      const f = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.2, 6), additive(PALETTE.stillfire, 0.6));
-      f.position.set(rand(-0.8, 0.8), Y + 1, 58 + i * 3);
+    const iron = mat('#2a2830', { metal: 0.8, rough: 0.4 });
+    for (let i = 0; i < 31; i++) b.box(3.2, 0.06, 0.12, iron, 0, Y, 57 + i, 0, { cast: false });
+    for (const s of [-1, 1]) b.box(0.15, 0.08, 30, iron, s * 1.55, Y, 72, 0, { cast: false });
+    for (let i = 0; i < 14; i++) {
+      const f = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.6, 5), additive(PALETTE.stillfire, 0.5));
+      f.position.set(rand(-1, 1), Y + 0.3, 58 + i * 2.1);
       this.group.add(f);
-      b.updaters.push((_dt, t) => f.scale.set(1, 0.7 + Math.sin(t * 7 + i) * 0.3, 1));
+      b.updaters.push((_dt, t) => f.scale.set(1, 0.6 + Math.sin(t * 7 + i) * 0.4, 1));
     }
     for (const [x, z] of [
       [-10, 60],
@@ -163,7 +167,7 @@ export class Chapter4 extends Level {
       [-10, 86],
       [10, 86],
     ]) {
-      const l = new THREE.PointLight('#e6ecff', 12, 22, 2);
+      const l = new THREE.PointLight('#e6ecff', 260, 30, 2);
       l.position.set(x, Y + 5, z);
       this.group.add(l);
     }
@@ -194,7 +198,7 @@ export class Chapter4 extends Level {
         this.plates.push(plate);
       }
     }
-    const al = new THREE.PointLight('#8ac8ff', 8, 14, 2);
+    const al = new THREE.PointLight('#8ac8ff', 90, 16, 2);
     al.position.set(0, Y + 3, 105);
     this.group.add(al);
 
@@ -278,6 +282,8 @@ export class Chapter4 extends Level {
 
   protected setupPlayer(cp: string) {
     this.mira = null;
+    for (const o of this.droppedBlade) this.group.remove(o);
+    this.droppedBlade = [];
     const p = this.player;
     p.canWrath = true;
     p.maxHp = 160;
@@ -295,8 +301,8 @@ export class Chapter4 extends Level {
       (v.ring.material as THREE.MeshBasicMaterial).opacity = 0;
     }
     this.setGateOpen(idx >= ORDER.indexOf('hall'));
-    this.world.boundsCenter.set(0, 0);
-    this.world.boundsRadius = 300;
+    this.world.boundsCenter.set(0, 10);
+    this.world.boundsRadius = 145;
   }
 
   private setGateOpen(open: boolean) {
@@ -387,7 +393,7 @@ export class Chapter4 extends Level {
     this.cinematic(true);
     this.shot(8, 3, -94, 0, 8, -50, Infinity);
     await this.fade(1, 0.01);
-    void this.fade(0, 2.5);
+    void this.game.ui.fade(0, 2.5);
     await this.card('Chapter Four', 'THE STILLFIRE FORGE', 'High in the Red Country, where the snow never melts. The Reach make their white fire here.', 4.2);
     this.music('tension');
     this.twoShot(p, this.mira!, 1);
@@ -439,11 +445,11 @@ export class Chapter4 extends Level {
     this.game.sfx.setAmbient('wind', 0.1);
     for (const v of this.vents) v.active = false;
     this.music('dread');
-    const orskNpc = this.npc(forgeMaster().look, 0, 94, Math.PI, 'stillSpear', 'orsk');
+    const orskNpc = this.npc(forgeMaster().look, 0, 98, Math.PI, 'stillSpear', 'orsk');
     this.cinematic(true);
     this.shot(6, 13.5, 48, 0, 12.5, 90, 1.2);
     await this.say('narrator', 'Inside, the forge is a hall of black stone and white fire. At the far end, an old man waits beside the trench, spear upright, beard to his belt.');
-    void orskNpc.goTo(0, 80, 2);
+    void orskNpc.goTo(0, 91, 2);
     this.closeUp(orskNpc, 3, 0.3, 1);
     await this.talk([
       ['orsk', 'So. The Forty-Seven comes to the fire herself.'],
@@ -587,6 +593,7 @@ export class Chapter4 extends Level {
     vein.position.y += 0.04;
     vein.rotation.y = 0.3;
     this.group.add(vein);
+    this.droppedBlade = [blade, vein];
     p.pose = null;
     void sauvir.goTo(0, 30, 1.6);
     await this.wait(2.2);

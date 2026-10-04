@@ -545,7 +545,7 @@ export class Rig {
 
     if (this.flashT > 0) {
       this.flashT -= dt;
-      const k = Math.max(0, this.flashT) * 8;
+      const k = Math.min(0.75, Math.max(0, this.flashT) * 5);
       for (const mm of this.allMats) mm.emissive.copy(this.flashColor).multiplyScalar(k);
       if (this.flashT <= 0) for (const mm of this.allMats) mm.emissive.set(this.look.glass ? '#5a2f9a' : 0x000000);
     }

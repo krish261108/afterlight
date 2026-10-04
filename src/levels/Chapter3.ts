@@ -188,8 +188,8 @@ export class Chapter3 extends Level {
     p.canWrath = true;
     p.maxHp = 150;
     p.hp = 150;
-    this.world.boundsCenter.set(0, 0);
-    this.world.boundsRadius = 300;
+    this.world.boundsCenter.set(0, 20);
+    this.world.boundsRadius = 132;
     this.game.engine.applyLighting(cp === 'ysolde' ? DUSK : SUN);
     for (const f of this.fires) f.visible = cp !== 'ysolde';
     this.game.sfx.setAmbient('fire', cp === 'ysolde' ? 0 : 0.35);
@@ -230,7 +230,7 @@ export class Chapter3 extends Level {
     this.cinematic(true);
     this.shot(6, 4, -104, 0, 3, -70, Infinity);
     await this.fade(1, 0.01);
-    void this.fade(0, 2.5);
+    void this.game.ui.fade(0, 2.5);
     await this.card('Chapter Three', "SEFIR'S WELL", 'The Red Country. Two suns, and no shade under either of them.', 4);
     this.music('calm');
     this.twoShot(p, this.mira!, 1);

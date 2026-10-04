@@ -39,10 +39,10 @@ const STORM: LightingPreset = {
   sun: '#b4bee6',
   sunIntensity: 1.3,
   sunDir: [0.3, 0.7, 0.4],
-  ambient: '#9aa2c8',
-  ambientIntensity: 1.15,
-  hemiGround: '#2a2a36',
-  exposure: 1.25,
+  ambient: '#a8b0d6',
+  ambientIntensity: 1.4,
+  hemiGround: '#3a3a48',
+  exposure: 1.35,
   bloom: 0.85,
   suns: 1,
 };
@@ -229,7 +229,7 @@ export class Chapter2 extends Level {
     const molten = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, 0.1, 16), glow('#ff8a2a', 2.2));
     molten.position.set(FX, 1.0, FZ + 2);
     this.group.add(molten);
-    const fl = new THREE.PointLight('#ff8a3a', 14, 16, 2);
+    const fl = new THREE.PointLight('#ff8a3a', 110, 18, 2);
     fl.position.set(FX, 2.5, FZ + 1);
     this.group.add(fl);
     for (let i = 0; i < 4; i++) {
@@ -258,11 +258,7 @@ export class Chapter2 extends Level {
       b.box(2.4, 0.3, 2.4, plank, cx, y - 0.3, cz, 0, { floor: true });
       const ix = Math.sign(TX - cx);
       const iz = Math.sign(TZ - cz);
-      if (k < 8) {
-        this.world.addWall(cx + ix * 1.35, cz, 0.3, 2.4, y - 0.4, y + 1.3);
-        this.world.addWall(cx, cz + iz * 1.35, 2.4, 0.3, y - 0.4, y + 1.3);
-      }
-      // Outer corner rails.
+      // Outer corner rails. Ramps join each landing on its two inner sides.
       this.world.addWall(cx - ix * 1.35, cz, 0.3, 2.7, y - 0.4, y + 1.3);
       this.world.addWall(cx, cz - iz * 1.35, 2.7, 0.3, y - 0.4, y + 1.3);
       // Struts from the tower to the landing.
@@ -285,7 +281,11 @@ export class Chapter2 extends Level {
       const lo = k === 0 ? 0.9 : y0 - 0.4;
       // Rails on both sides of the ramp so nobody walks off into the drop.
       this.world.addWall(mx + (along ? 0 : nx * 1.25), mz + (along ? nz * 1.25 : 0), along ? span : 0.3, along ? 0.3 : span, lo, y1 + 1.3);
-      this.world.addWall(mx - (along ? 0 : nx * 1.25), mz - (along ? nz * 1.25 : 0), along ? span : 0.3, along ? 0.3 : span, k === 0 ? 0.9 : y0 - 0.4, y1 + 1.3);
+      // Inner rail. On the final ramp it stops short so the top end opens onto the roof.
+      const cut = k === 7 ? 2.2 : 0;
+      const ix = (along ? 0 : -nx * 1.25) - (along ? dx * cut * 0.5 : 0);
+      const iz = (along ? -nz * 1.25 : 0) - (along ? 0 : dz * cut * 0.5);
+      this.world.addWall(mx + ix, mz + iz, along ? span - cut : 0.3, along ? 0.3 : span - cut, k === 0 ? 0.9 : y0 - 0.4, y1 + 1.3);
       b.ramp(ax + dx * 1.2 + (along ? 0 : nx * 1.15), y0 + 0.9, az + dz * 1.2 + (along ? nz * 1.15 : 0), bx - dx * 1.2 + (along ? 0 : nx * 1.15), y1 + 0.9, bz - dz * 1.2 + (along ? nz * 1.15 : 0), 0.14, beam, 0.12);
     }
     // The roof: where Sauvir waits. The stair arrives at its south-west corner.
@@ -361,7 +361,7 @@ export class Chapter2 extends Level {
     this.setStorm(idx >= ORDER.indexOf('tower') && idx < ORDER.indexOf('night'));
     this.game.engine.applyLighting(cp === 'night' || cp === 'foundry' ? NIGHT : idx >= ORDER.indexOf('tower') ? STORM : DUSK);
     this.world.boundsCenter.set(0, 80);
-    this.world.boundsRadius = 300;
+    this.world.boundsRadius = 145;
     if (cp === 'duel') p.place(TX - 3, TZ - 3, 0.8);
   }
 
@@ -456,7 +456,7 @@ export class Chapter2 extends Level {
     this.templeTarget = -10;
     this.shot(6, 3, -14, 0, 9, -30, Infinity);
     await this.fade(1, 0.01);
-    void this.fade(0, 2.5);
+    void this.game.ui.fade(0, 2.5);
     await this.card('Chapter Two', 'THE LITANY GATE', 'Dusk. A canyon road, a fortress in the cliff, and a storm building in the north.', 4);
     this.music('tension');
     this.shot(-4, 2.6, 10, 0, 4, 60, 1.2);
@@ -672,7 +672,7 @@ export class Chapter2 extends Level {
     p.pose = null;
     p.rig.setWeapon('ashvow');
     this.playerProtected = false;
-    this.world.boundsRadius = 300;
+    this.world.boundsRadius = 145;
     this.world.boundsCenter.set(0, 80);
     await this.fade(1, 0.8);
   }

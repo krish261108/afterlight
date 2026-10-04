@@ -66,7 +66,7 @@ export class TitleScene {
     blade.rotation.z = 0.12;
     blade.rotation.x = -0.08;
     this.group.add(blade);
-    const pl = new THREE.PointLight('#b98cff', 3, 8, 2);
+    const pl = new THREE.PointLight('#b98cff', 14, 9, 2);
     pl.position.set(3.4, 0.3, 4);
     this.group.add(pl);
     b.scatterGrass(1500, (r) => {

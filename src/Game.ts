@@ -42,6 +42,7 @@ export class Game {
   private last = performance.now();
   private hasSave: boolean;
   private deathToken = 0;
+  private ignoreUnlock = false;
   private proj = new THREE.Vector3();
   fps = 60;
   /** Debug only (?debug in the URL): fast-forward and autopilot for automated play-throughs. */
@@ -78,7 +79,8 @@ export class Game {
     );
     this.input.buildTouch(root);
     this.input.onPointerUnlock = () => {
-      if (this.state === 'playing') this.pause();
+      if (this.state === 'playing' && !this.ui.choosing && !this.ignoreUnlock) this.pause();
+      this.ignoreUnlock = false;
     };
     this.applySettings(this.settings);
     const unlock = () => {
@@ -207,7 +209,9 @@ export class Game {
   pause() {
     if (this.state !== 'playing' || !this.level) return;
     this.state = 'paused';
+    this.ignoreUnlock = true;
     this.input.exitLock();
+    this.input.flush();
     this.input.setTouchVisible(false);
     this.voice.pause();
     this.sfx.stopHum();
@@ -227,6 +231,8 @@ export class Game {
 
   resume() {
     if (this.state !== 'paused') return;
+    this.ignoreUnlock = false;
+    this.input.flush();
     this.ui.clearScreens();
     this.state = 'playing';
     this.voice.resume();
@@ -259,6 +265,7 @@ export class Game {
     const token = ++this.deathToken;
     this.save.stats.deaths++;
     this.input.setTouchVisible(false);
+    this.ui.setHUDVisible(false);
     this.sfx.stopHum();
     this.voice.cancel();
     this.ui.clearSubtitle();
@@ -328,7 +335,11 @@ export class Game {
       this.state = 'paused';
       this.input.exitLock();
       this.input.setTouchVisible(false);
+      this.ignoreUnlock = true;
+      this.input.flush();
       this.ui.showBook(this.save.memories, this.save.life, () => {
+        this.ignoreUnlock = false;
+        this.input.flush();
         this.ui.clearScreens();
         this.state = 'playing';
         this.input.releaseAll();
@@ -354,7 +365,9 @@ export class Game {
   }
 
   async choose(options: string[]): Promise<number> {
+    this.ignoreUnlock = true;
     this.input.exitLock();
+    this.input.flush();
     return this.ui.choice(options);
   }
 

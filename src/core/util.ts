@@ -75,9 +75,11 @@ export function fbm(x: number, y: number, oct = 4) {
   return sum;
 }
 
-export const isTouchDevice = () =>
-  typeof window !== 'undefined' &&
-  (window.matchMedia?.('(pointer: coarse)').matches || 'ontouchstart' in window);
+export const isTouchDevice = () => {
+  if (typeof window === 'undefined') return false;
+  const mm = (q: string) => !!window.matchMedia?.(q).matches;
+  return mm('(pointer: coarse)') || (navigator.maxTouchPoints > 0 && !mm('(pointer: fine)'));
+};
 
 export const isMac = () =>
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);

@@ -142,7 +142,7 @@ export class UI {
     this.letterboxEl = el('div', 'letterbox');
     this.letterboxEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
     this.vignetteEl = el('div', 'vignette');
-    this.subEl = el('div', 'subtitles clickable');
+    this.subEl = el('div', 'subtitles');
     this.subEl.addEventListener('click', () => this.advanceResolve?.());
     this.choiceEl = el('div', 'choices hidden');
     this.toastEl = el('div', 'toast');
@@ -601,7 +601,7 @@ export class UI {
     const sp = speakerId ? SPEAKERS[speakerId] : null;
     const who = sp && sp.name ? `<span class="who" style="color:${sp.color}">${escapeHtml(sp.name)}</span>` : '';
     const italic = speakerId === 'narrator' ? ' style="font-style:italic;font-family:var(--display);font-size:1.15em"' : '';
-    this.subEl.className = 'subtitles clickable' + (cine ? ' cine' : '');
+    this.subEl.className = 'subtitles' + (cine ? ' cine clickable' : '');
     this.subEl.innerHTML = `<div class="line"${italic}>${who}${escapeHtml(text)}${hint ? `<span class="next">${escapeHtml(hint)}</span>` : ''}</div>`;
   }
 

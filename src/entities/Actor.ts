@@ -431,9 +431,22 @@ export class Actor {
 
   protected updatePhysics(dt: number) {
     const w = this.ctx.world;
+    const ox = this.pos.x;
+    const oz = this.pos.z;
+    const t0 = w.terrain(ox, oz);
     this.pos.x += this.vel.x * dt;
     this.pos.z += this.vel.z * dt;
     w.resolve(this.pos, this.radius, this.bounded);
+    // Cliffs: terrain steeper than ~55 degrees can't be climbed.
+    const moved = Math.hypot(this.pos.x - ox, this.pos.z - oz);
+    if (moved > 1e-4 && this.grounded) {
+      const t1 = w.terrain(this.pos.x, this.pos.z);
+      const g1 = w.groundAt(this.pos.x, this.pos.z, this.pos.y);
+      if (g1 <= t1 + 1e-3 && t1 - t0 > 0.02 && (t1 - t0) / moved > 1.45) {
+        this.pos.x = ox;
+        this.pos.z = oz;
+      }
+    }
     const g = w.groundAt(this.pos.x, this.pos.z, this.pos.y);
     if (this.grounded && this.pos.y - g < 0.6 && this.pos.y >= g - 0.6) {
       this.pos.y = g;

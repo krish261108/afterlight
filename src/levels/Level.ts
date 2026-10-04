@@ -255,6 +255,11 @@ export abstract class Level implements CombatCtx {
     }
     const p = this.player;
     p.place(sp.x, sp.z, sp.facing);
+    p.rig.root.visible = true;
+    p.humming = false;
+    p.blocking = false;
+    p.pose = null;
+    p.minHp = 0;
     p.control = true;
     p.lockTarget = null;
     p.hp = p.maxHp;
@@ -294,6 +299,7 @@ export abstract class Level implements CombatCtx {
 
   update(dt: number) {
     this.time += dt;
+    if (this.player.alive) this.player.minHp = this.playerProtected ? 1 : 0;
     const inp = this.game.input;
     if (this.lineActive) {
       this.lineT += dt;
@@ -757,6 +763,20 @@ export abstract class Level implements CombatCtx {
         if (o.y > p.pos.y + 1) p.pos.y = o.y;
       }
     }
+  }
+
+  /** Debug only: stop the story script so a test can move the player freely. */
+  debugFreeze() {
+    this.runId++;
+    const pending = this.waits;
+    this.waits = [];
+    for (const w of pending) w.reject(new CancelError());
+    for (const a of [...this.actors]) if (a !== this.player) this.removeActor(a);
+    this.cine = false;
+    this.player.control = true;
+    this.playerProtected = true;
+    this.game.ui.setLetterbox(false);
+    this.game.camera.release(this.player);
   }
 
   get liveRunId() {

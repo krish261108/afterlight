@@ -114,6 +114,7 @@ export class Builder {
     const tg = this.terrainGrid;
     this.world.terrain = (x, z) => {
       const half = tg.size / 2;
+      if (Math.abs(x - tg.ox) > half || Math.abs(z - tg.oz) > half) return -50;
       const fx = ((x - tg.ox + half) / tg.size) * tg.seg;
       const fz = ((z - tg.oz + half) / tg.size) * tg.seg;
       const ix = clamp(Math.floor(fx), 0, tg.seg - 1);
@@ -394,7 +395,7 @@ export class Builder {
     g.add(outer, inner);
     let pl: THREE.PointLight | null = null;
     if (light && this.quality !== 'low') {
-      pl = new THREE.PointLight(color, 6 * s, 9 * s, 2);
+      pl = new THREE.PointLight(color, 28 * s, 11 * s, 2);
       pl.position.y = 0.4;
       g.add(pl);
     }
@@ -404,7 +405,7 @@ export class Builder {
       const f = 0.85 + Math.sin(t * 13 + phase) * 0.08 + Math.sin(t * 23 + phase * 2) * 0.06;
       outer.scale.set(1, f, 1);
       outer.rotation.y = t * 2 + phase;
-      if (pl) pl.intensity = 6 * s * f;
+      if (pl) pl.intensity = 28 * s * f;
     });
     return g;
   }

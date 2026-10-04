@@ -63,6 +63,10 @@ export class Fighter extends Actor {
   onThink: ((self: Fighter, dt: number) => void) | null = null;
   habitReader = false;
   moveScale = 1;
+  private lastPos = new THREE.Vector3();
+  private blockedT = 0;
+  private detourT = 0;
+  private detourSide = 1;
 
   constructor(ctx: CombatCtx, type: FighterType, team: Team = 'enemy') {
     super(ctx, type.look, { name: type.name, team, hp: type.hp, posture: type.posture, weapon: type.weapon, offWeapon: type.off });
@@ -321,6 +325,22 @@ export class Fighter extends Actor {
         vx += (ox / od) * (2 - od) * 1.5;
         vz += (oz / od) * (2 - od) * 1.5;
       }
+    }
+    // If something solid is in the way, slide sideways around it for a moment.
+    const want = Math.hypot(vx, vz);
+    const moved = Math.hypot(this.pos.x - this.lastPos.x, this.pos.z - this.lastPos.z);
+    this.lastPos.copy(this.pos);
+    if (want > 1 && moved < want * dt * 0.3) this.blockedT += dt;
+    else this.blockedT = Math.max(0, this.blockedT - dt * 2);
+    if (this.blockedT > 0.35 && this.detourT <= 0) {
+      this.detourT = rand(0.7, 1.3);
+      this.detourSide = Math.random() < 0.5 ? 1 : -1;
+      this.blockedT = 0;
+    }
+    if (this.detourT > 0) {
+      this.detourT -= dt;
+      vx += -dz * this.detourSide * sp * 1.1;
+      vz += dx * this.detourSide * sp * 1.1;
     }
     tmp.set(vx, 0, vz);
     this.vel.lerp(tmp, Math.min(1, 6 * dt));

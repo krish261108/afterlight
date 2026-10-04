@@ -162,7 +162,7 @@ export class Prologue extends Level {
     g.position.set(BLADE.x, this.world.terrain(BLADE.x, BLADE.z), BLADE.z);
     this.group.add(g);
     this.bladeMesh = g;
-    this.bladeGlint = new THREE.PointLight('#b98cff', 0, 5, 2);
+    this.bladeGlint = new THREE.PointLight('#b98cff', 0, 7, 2);
     this.bladeGlint.position.set(BLADE.x, g.position.y + 0.4, BLADE.z);
     this.group.add(this.bladeGlint);
 
@@ -196,14 +196,14 @@ export class Prologue extends Level {
     p.canHum = true;
     p.maxHp = 100;
     p.hp = 100;
-    this.world.boundsRadius = 200;
-    this.world.boundsCenter.set(0, 0);
+    this.world.boundsRadius = 120;
+    this.world.boundsCenter.set(-10, -30);
     if (this.bladeMesh) this.bladeMesh.visible = cp !== 'hold2';
     if (this.bladeGlint) this.bladeGlint.intensity = 0;
   }
 
   protected tick(dt: number) {
-    if (this.bladeGlint && this.bladeGlint.intensity > 0) this.bladeGlint.intensity = 2.5 + Math.sin(this.time * 4) * 1.2;
+    if (this.bladeGlint && this.bladeGlint.intensity > 0) this.bladeGlint.intensity = 12 + Math.sin(this.time * 4) * 5;
     if (!this.crossing) return;
     this.crossT -= dt;
     if (this.crossT <= 0 && this.crossed + this.inFlight < this.crossCap && this.inFlight < 5) {
@@ -450,6 +450,8 @@ export class Prologue extends Level {
     await this.runWaves(1);
     await this.until(() => this.crossed >= 20);
     this.crossing = false;
+    this.world.boundsCenter.set(-10, -30);
+    this.world.boundsRadius = 120;
 
     // The sword breaks.
     const p = this.player;
@@ -487,7 +489,7 @@ export class Prologue extends Level {
     this.world.boundsCenter.set(-12, 2);
     this.world.boundsRadius = 18;
     this.music('silence');
-    if (this.bladeGlint) this.bladeGlint.intensity = 2.5;
+    if (this.bladeGlint) this.bladeGlint.intensity = 12;
     if (this.bladeMesh) this.bladeMesh.visible = true;
     this.goal('Find something to fight with', [BLADE.x, this.world.terrain(BLADE.x, BLADE.z), BLADE.z]);
     this.bark('ira1', 'No. No, no, no—');

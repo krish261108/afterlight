@@ -124,7 +124,7 @@ export class Chapter1 extends Level {
       [-5, 8],
       [5, 8],
     ]) {
-      const pl = new THREE.PointLight('#ffae5a', 8, 14, 2);
+      const pl = new THREE.PointLight('#ffae5a', 55, 16, 2);
       pl.position.set(x, 3, z);
       this.group.add(pl);
     }
@@ -277,13 +277,13 @@ export class Chapter1 extends Level {
     p.canWrath = cp === 'spar' || cp === 'blade';
     p.maxHp = 130;
     p.hp = 130;
-    this.world.boundsCenter.set(0, 20);
-    this.world.boundsRadius = 200;
     if (this.ashRack) this.ashRack.visible = cp === 'start' || cp === 'courtyard';
     this.setViolet(cp === 'blade');
   }
 
   private setViolet(on: boolean) {
+    this.world.boundsCenter.set(on ? VIOLET_X : 0, on ? 0 : 30);
+    this.world.boundsRadius = on ? 60 : 105;
     this.game.engine.applyLighting(on ? VIOLET : DAY);
     this.game.engine.setStars(on ? 1 : 0);
     this.game.sfx.setAmbient('violet', on ? 0.6 : 0);
@@ -317,7 +317,7 @@ export class Chapter1 extends Level {
     this.shot(0, 2.2, -8.2, 0, 1.9, -12, Infinity);
     await this.fade(1, 0.01);
     await this.wait(0.4);
-    void this.fade(0, 3);
+    void this.game.ui.fade(0, 3);
     this.sfx.play('heartbeat');
     await this.wait(1.4);
     this.sfx.play('heartbeat');
@@ -530,7 +530,7 @@ export class Chapter1 extends Level {
     corrow.place(15, 40, Math.PI + 0.6);
     mira.place(6, 42, 1.2);
     pell.place(7, 44, 1.6);
-    void this.fade(0, 1, true);
+    void this.game.ui.fade(0, 1, true);
     this.music('tension');
     this.cinematic(true);
     this.twoShot(p, corrow, 1);
